@@ -11,4 +11,4 @@ Ergänzend zum Artikel aus der Make 7/23 findest du hier den benötigten Code f�
 
 ![Picture](https://github.com/MakeMagazinDE/PUGG-mod/blob/main/pugg_mod_main.jpg)
 
-Den Artikel mit der Bauanleitung gibt es in der **[Make-Ausgabe 5/23](https://www.heise.de/select/make/2023/7)** zu lesen.
+Den Artikel mit der Bauanleitung gibt es in der **[Make-Ausgabe 7/23](https://www.heise.de/select/make/2023/7)** zu lesen.
