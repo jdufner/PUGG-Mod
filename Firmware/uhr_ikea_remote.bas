@@ -2,7 +2,7 @@
 
 ; fuer Debug-Terminalausgaben das Semikolon vor folgender Zeile entfernen:
 ;#define DEBUG_PRINT sertxd
- 
+
 ; fuer Debug-Terminalausgaben das Semikolon vor folgende Zeile setzen:
 #define DEBUG_PRINT ;
 
@@ -65,27 +65,27 @@ symbol irAddr_msb = b27
 symbol CLOCK_DELAY = 1000*8 ; *8 wegen 32 MHz Takt
 
 ; IR-Codes NEC-Fernbedienung CAR-MP4
-#define IR_STANDBY 0
-#define IR_MENU    1
-#define IR_PLAY    2
-#define IR_RPT     4
-#define IR_CH_M    5
-#define IR_CH_P    6
-#define IR_EQ      8
-#define IR_VOL_DN  9
-#define IR_VOL_UP 10
-#define IR_0      12
-#define IR_LEFT   13
-#define IR_RIGHT  14
-#define IR_1      16
-#define IR_2      17
-#define IR_3      18
-#define IR_4      20
-#define IR_5      21
-#define IR_6      22
-#define IR_7      24
-#define IR_8      25
-#define IR_9      26
+#define IR_LEFT     0
+#define IR_RIGHT    1
+#define IR_0        2
+#define IR_1        3
+#define IR_2        4
+#define IR_3        5
+#define IR_4        6
+#define IR_5        7
+#define IR_6        8
+#define IR_7        9
+#define IR_8       10
+#define IR_9       11
+#define IR_PLAY    12
+#define IR_STANDBY 13
+#define IR_MENU    14
+#define IR_RPT     15
+#define IR_CH_M    16
+#define IR_CH_P    17
+#define IR_EQ      18
+#define IR_VOL_DN  19
+#define IR_VOL_UP  20
 
 
 #MACRO SetNextLed(r,g,b)
@@ -188,6 +188,8 @@ state = 0
 gosub enable_ir_int
 
 main:
+   ;DEBUG_PRINT("Start main",cr,lf)
+   DEBUG_PRINT("Programmnummer=",progNumber,cr,lf)
    lastProgNumber = progNumber
    select case progNumber
       case 0
@@ -581,5 +583,3 @@ ir_stop:
    gosub enable_ir_int
    bptr = bptr_saved
 return
-
-
