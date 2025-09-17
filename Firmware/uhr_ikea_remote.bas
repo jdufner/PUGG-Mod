@@ -64,28 +64,31 @@ symbol irAddr_msb = b27
 
 symbol CLOCK_DELAY = 1000*8 ; *8 wegen 32 MHz Takt
 
-; IR-Codes NEC-Fernbedienung CAR-MP4
-#define IR_LEFT     0
-#define IR_RIGHT    1
-#define IR_0        2
-#define IR_1        3
-#define IR_2        4
-#define IR_3        5
-#define IR_4        6
-#define IR_5        7
-#define IR_6        8
-#define IR_7        9
-#define IR_8       10
-#define IR_9       11
-#define IR_PLAY    12
-#define IR_STANDBY 13
-#define IR_MENU    14
-#define IR_RPT     15
-#define IR_CH_M    16
-#define IR_CH_P    17
-#define IR_EQ      18
-#define IR_VOL_DN  19
-#define IR_VOL_UP  20
+; IR-Codes NEC-Fernbedienung CASALUX Remote Control for RGB LED-Flexband 46916
+#define IR_BRIGHTER 0
+#define IR_DARKER   1
+#define IR_OFF      2
+#define IR_ON       3
+#define IR_RED      4
+#define IR_GREEN    5
+#define IR_BLUE     6
+#define IR_WHITE    7
+#define IR_1        8
+#define IR_2        9
+#define IR_3       10
+#define IR_FLASH   11
+#define IR_4       12
+#define IR_5       13
+#define IR_6       14
+#define IR_STROBE  15
+#define IR_7       16
+#define IR_8       17
+#define IR_9       18
+#define IR_FADE    19
+#define IR_10      20
+#define IR_11      21
+#define IR_12      22
+#define IR_SMOOTH  23
 
 
 #MACRO SetNextLed(r,g,b)
@@ -221,6 +224,15 @@ main:
       
       case 9
          gosub ledprog_rainbowCycle
+      
+      case 10
+         gosub ledprog_chain7
+      
+      case 11
+         gosub ledprog_chain8
+      
+      case 12
+         gosub ledprog_chain9
       
       case 255
          progNumber = 9
@@ -403,6 +415,71 @@ ledprog_chain6:
 return
 
 
+ledprog_chain7:
+   gosub setColors2
+   for localByte1 = 0 to maxLed
+      if localByte1 <> 0 then
+         localByte2 = localByte1 - 1
+      else
+         localByte2 = maxLed
+      endif
+      SetLed(localByte2, 0, 0, 0)
+      SetLed(localByte1, color_r, color_g, color_b)
+      gosub updateLeds
+      CheckForProgChange
+      pause CLOCK_DELAY
+   next localByte1
+   state = state + 1
+return
+
+
+ledprog_chain8:
+   gosub setColors
+   for localWord1 = 0 to maxLed
+      localWord2 = localWord1 + 1 ; next led
+      if localWord2 > maxLed then
+         localWord2 = 0
+      endif
+      for localByte1 = 0 to 7
+         localByte2 = localByte1 * 16 ; current brightness step (0, 32, 64, ..., 224)
+         localByte3 = 112 - localByte2 ; fading brightness step (224, 192, ..., 0)
+         
+         ; fade out current LED
+         brightness = localByte3
+         SetLed(localWord1, color_r, color_g, color_b)
+         
+         ; fade in next LED
+         brightness = localByte2
+         SetLed(localWord2, color_r, color_g, color_b)
+         
+         gosub updateLeds
+         brightness = LED_DEFAULT_BRIGHTNESS
+         CheckForProgChange
+         pause 1000
+      next localByte1
+   next localWord1
+   state = state + 1
+return
+
+
+ledprog_chain9:
+   for localByte1 = 0 to maxLed
+	gosub setColors2
+      if localByte1 <> 0 then
+         localByte2 = localByte1 - 1
+      else
+         localByte2 = maxLed
+      endif
+      SetLed(localByte2, 0, 0, 0)
+      SetLed(localByte1, color_r, color_g, color_b)
+	state = state + 1
+      gosub updateLeds
+      CheckForProgChange
+      pause CLOCK_DELAY
+   next localByte1
+return
+
+
 ledprog_brightness:
    gosub setColors
    for localByte1 = 0 to 9
@@ -426,6 +503,16 @@ setColors:
    lookup state,(0xFF, 0xFF, 0x00, 0x00, 0x00, 0xFF),color_r
    lookup state,(0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00),color_g
    lookup state,(0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF),color_b
+return
+
+
+setColors2:
+   if state > 11 then
+      state = 0
+   endif
+   lookup state,(0xFF, 0xFF, 0xFF, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF),color_r
+   lookup state,(0x00, 0x7F, 0xFF, 0xFF, 0xFF, 0x7F, 0xFF, 0x7F, 0x00, 0x00, 0x00),color_g
+   lookup state,(0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF),color_b
 return
 
 
@@ -552,30 +639,36 @@ ir_stop:
    if irCounter = 32 then
       
       select case irData_lsb
-         case IR_RIGHT
+         case IR_DARKER
             progNumber = progNumber + 1
-         case IR_LEFT
+         case IR_BRIGHTER
             progNumber = progNumber - 1
-         case IR_0
+         case IR_OFF
             progNumber = 0
-         case IR_1
+         case IR_ON
             progNumber = 1
-         case IR_2
+         case IR_RED
             progNumber = 2
-         case IR_3
+         case IR_GREEN
             progNumber = 3
-         case IR_4
+         case IR_BLUE
             progNumber = 4
-         case IR_5
+         case IR_WHITE
             progNumber = 5
-         case IR_6
+         case IR_1
             progNumber = 6
-         case IR_7
+         case IR_2
             progNumber = 7
-         case IR_8
+         case IR_3
             progNumber = 8
-         case IR_9
+         case IR_FLASH
             progNumber = 9
+         case IR_4
+            progNumber = 10
+         case IR_5
+            progNumber = 11
+         case IR_6
+            progNumber = 12
       end select
    
    endif
