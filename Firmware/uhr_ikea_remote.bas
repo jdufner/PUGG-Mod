@@ -220,22 +220,16 @@ main:
          gosub ledprog_chain6
 
       case 8
-         gosub ledprog_brightness
-      
-      case 9
-         gosub ledprog_rainbowCycle
-      
-      case 10
          gosub ledprog_chain7
       
-      case 11
-         gosub ledprog_chain8
+      case 9
+         gosub ledprog_brightness
       
-      case 12
-         gosub ledprog_chain9
+      case 10
+         gosub ledprog_rainbowCycle
       
       case 255
-         progNumber = 9
+         progNumber = 10
          
       else
          progNumber = 0
@@ -257,9 +251,11 @@ ledprog_clock:
       localByte2 = localByte3 - 1
       localByte1 = localByte3 % 5
       if localByte1 = 0 then
-         SetLed(localByte2, 0xFF, 0, 0)
+         gosub setColor0
+         SetLed(localByte2, color_r, color_g, color_b)
       else
-         SetLed(localByte2, 0, 0xFF, 0)
+         gosub setColor1to4
+         SetLed(localByte2, color_r, color_g, color_b)
       endif
       gosub updateLeds
       CheckForProgChange
@@ -272,6 +268,27 @@ ledprog_clock:
       CheckForProgChange
       pause CLOCK_DELAY
    next localByte3
+   state = state + 1
+return
+
+
+setColor0:
+   if state > 14 then
+      state = 0
+   endif
+   lookup state,(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00),color_r
+   lookup state,(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF),color_g
+   lookup state,(0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00),color_b
+return
+
+
+setColor1to4:
+   if state > 14 then
+      state = 0
+   endif
+   lookup state,(0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x7F, 0x7F, 0x00, 0xFF, 0xFF, 0xFF),color_r
+   lookup state,(0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0x7F, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00),color_g
+   lookup state,(0x7F, 0x00, 0xFF, 0xFF, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x7F),color_b
 return
 
 
@@ -282,8 +299,10 @@ ledprog_autoMode:
    REPEAT_LEDPROG(ledprog_chain4, 6)
    REPEAT_LEDPROG(ledprog_chain5, 6)
    REPEAT_LEDPROG(ledprog_chain6, 6)
+   REPEAT_LEDPROG(ledprog_chain7, 6)
    REPEAT_LEDPROG(ledprog_brightness, 6)
    REPEAT_LEDPROG(ledprog_rainbowCycle, 1)
+   REPEAT_LEDPROG(ledprog_clock, 1)
 return
 
 
@@ -318,7 +337,7 @@ return
 
 
 ledprog_chain1:
-   gosub setColors
+   gosub setColors6
    for localByte1 = 0 to maxLed
       if localByte1 <> 0 then
          localByte2 = localByte1 - 1
@@ -336,7 +355,25 @@ return
 
 
 ledprog_chain2:
-   gosub setColors
+   gosub setColors12
+   for localByte1 = 0 to maxLed
+      if localByte1 <> 0 then
+         localByte2 = localByte1 - 1
+      else
+         localByte2 = maxLed
+      endif
+      SetLed(localByte2, 0, 0, 0)
+      SetLed(localByte1, color_r, color_g, color_b)
+      gosub updateLeds
+      CheckForProgChange
+      pause 20
+   next localByte1
+   state = state + 1
+return
+
+
+ledprog_chain3:
+   gosub setColors6
    for localByte1 = 0 to maxLed
       SetLed(localByte1, color_r, color_g, color_b)
       gosub updateLeds
@@ -347,76 +384,20 @@ ledprog_chain2:
 return
 
 
-ledprog_chain3:
-   gosub setColors
-   localByte2 = NUMBER_OF_LEDS / 2 - 1
-   for localByte1 = 0 to localByte2
-      SetLed(localByte1, color_r, color_g, color_b)
-      SetLed(NUMBER_OF_LEDS - localByte1 - 1, color_r, color_g, color_b)
-      gosub updateLeds
-      CheckForProgChange
-      pause 400
-   next localByte1
-   state = state + 1
-return
-
-
 ledprog_chain4:
-   gosub setColors
-   localByte2 = NUMBER_OF_LEDS / 6 - 1
-   for localByte1 = 0 to localByte2
-      for localByte3 = localByte1 to maxLed step 10
-         SetLed(localByte3, color_r, color_g, color_b)
-      next localByte3
+   gosub setColors12
+   for localByte1 = 0 to maxLed
+      SetLed(localByte1, color_r, color_g, color_b)
       gosub updateLeds
       CheckForProgChange
-      pause 400
+      pause 200
    next localByte1
    state = state + 1
 return
 
 
 ledprog_chain5:
-   gosub setColors
-   localByte2 = NUMBER_OF_LEDS / 6 - 1
-   for localByte1 = 0 to localByte2
-      for localByte3 = localByte1 to maxLed step 10
-         if localByte3 <> 0 then
-            localByte3 = localByte3 - 1
-            SetLed(localByte3, 0, 0, 0)
-            localByte3 = localByte3 + 1
-         else
-            SetLed(maxLed, 0, 0, 0)
-         endif
-         SetLed(localByte3, color_r, color_g, color_b)
-      next localByte3
-      gosub updateLeds
-      CheckForProgChange
-      pause 400
-   next localByte1
-   state = state + 1
-return
-
-
-ledprog_chain6:
-   gosub setColors
-   localByte2 = NUMBER_OF_LEDS / 3 - 1
-   for localByte1 = 0 to localByte2
-      SetLedAddress(localByte1)
-      for localByte3 = 1 to 3
-         SetNextMultipleLedsCircular(10, color_r, color_g, color_b)
-         SetNextMultipleLedsCircular(10, 0, 0, 0)
-      next localByte3
-      gosub updateLeds
-      CheckForProgChange
-      pause 300
-   next localByte1
-   state = state + 1
-return
-
-
-ledprog_chain7:
-   gosub setColors2
+   gosub setColors12
    for localByte1 = 0 to maxLed
       if localByte1 <> 0 then
          localByte2 = localByte1 - 1
@@ -433,8 +414,26 @@ ledprog_chain7:
 return
 
 
-ledprog_chain8:
-   gosub setColors
+ledprog_chain6:
+   for localByte1 = 0 to maxLed
+	gosub setColors12
+      if localByte1 <> 0 then
+         localByte2 = localByte1 - 1
+      else
+         localByte2 = maxLed
+      endif
+      SetLed(localByte2, 0, 0, 0)
+      SetLed(localByte1, color_r, color_g, color_b)
+	state = state + 1
+      gosub updateLeds
+      CheckForProgChange
+      pause CLOCK_DELAY
+   next localByte1
+return
+
+
+ledprog_chain7:
+   gosub setColors6
    for localWord1 = 0 to maxLed
       localWord2 = localWord1 + 1 ; next led
       if localWord2 > maxLed then
@@ -462,26 +461,8 @@ ledprog_chain8:
 return
 
 
-ledprog_chain9:
-   for localByte1 = 0 to maxLed
-	gosub setColors2
-      if localByte1 <> 0 then
-         localByte2 = localByte1 - 1
-      else
-         localByte2 = maxLed
-      endif
-      SetLed(localByte2, 0, 0, 0)
-      SetLed(localByte1, color_r, color_g, color_b)
-	state = state + 1
-      gosub updateLeds
-      CheckForProgChange
-      pause CLOCK_DELAY
-   next localByte1
-return
-
-
 ledprog_brightness:
-   gosub setColors
+   gosub setColors12
    for localByte1 = 0 to 9
       localByte2 = brightness ; save current brightness
       lookup localByte1,(0x08, 0x10, 0x18, 0x20, 0x30, 0x40, 0x60, 0x80, 0xC0, 0xFF),brightness
@@ -496,7 +477,7 @@ ledprog_brightness:
 return
 
 
-setColors:
+setColors6:
    if state > 5 then
       state = 0
    endif
@@ -506,13 +487,13 @@ setColors:
 return
 
 
-setColors2:
+setColors12:
    if state > 11 then
       state = 0
    endif
-   lookup state,(0xFF, 0xFF, 0xFF, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF),color_r
-   lookup state,(0x00, 0x7F, 0xFF, 0xFF, 0xFF, 0x7F, 0xFF, 0x7F, 0x00, 0x00, 0x00),color_g
-   lookup state,(0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF),color_b
+   lookup state,(0xFF, 0xFF, 0xFF, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF, 0xFF),color_r
+   lookup state,(0x00, 0x7F, 0xFF, 0xFF, 0xFF, 0x7F, 0xFF, 0x7F, 0x00, 0x00, 0x00, 0x00),color_g
+   lookup state,(0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F),color_b
 return
 
 
@@ -665,10 +646,6 @@ ir_stop:
             progNumber = 9
          case IR_4
             progNumber = 10
-         case IR_5
-            progNumber = 11
-         case IR_6
-            progNumber = 12
       end select
    
    endif
